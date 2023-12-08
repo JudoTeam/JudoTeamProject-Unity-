@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.Rendering;
 using UnityEngine;
 
@@ -7,11 +8,14 @@ public class Controller : MonoBehaviour
 {
     private Rigidbody _rigidbody;
     private Animator _animator;
-    public float speed = 2f;
-    public float rotationspeed = 10f;
+    private float speed = 8f;
+    private float rotationspeed = 10f;
+    private float slideforce = 5f;
     public Transform groundCheckerTransform;
     public LayerMask notPlayerMask;
-    public float jumpForce = 5f;
+    private float jumpForce = 7f;
+    [SerializeField]
+    private Camera _playerCamera;
     // Start is called before the first frame update
     void Start()
     {
@@ -22,14 +26,17 @@ public class Controller : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
+    {   
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
-
+        
         Vector3 directionVector = new Vector3(horizontal, 0 ,vertical);
-
+        
+        // Vector3 forwardMovement = new Vector3(_playerCamera.transform.forward.x, 0, _playerCamera.transform.forward.z) * vertical;
+        // Vector3 horizontalMovement = _playerCamera.transform.right * horizontal;
+        // Vector3 directionVector = forwardMovement + horizontalMovement;
         if(directionVector.magnitude > Mathf.Abs(0.05f))
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(directionVector), Time.deltaTime * rotationspeed);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(directionVector), Time.deltaTime * rotationspeed);
 
         _animator.SetFloat("speed", Vector3.ClampMagnitude(directionVector, 1).magnitude); 
 
@@ -39,10 +46,26 @@ public class Controller : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.Space))
         {
-            Jump();
+            if(IsGround())
+            {
+                Jump();
+            }
+            else
+            {
+                DoubleJump();
+            }
         }
 
-        if(Physics.CheckSphere(groundCheckerTransform.position, 0.3f, notPlayerMask))
+        if(Input.GetKeyDown(KeyCode.V))
+        {
+            Slide();
+        }
+        if(Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            Attack();
+        }
+
+        if(IsGround())
         {
             _animator.SetBool("isinair", false);
         }
@@ -51,15 +74,40 @@ public class Controller : MonoBehaviour
             _animator.SetBool("isinair", true);
         }
     }
-
+    bool IsGround()
+    {
+        return Physics.CheckSphere(groundCheckerTransform.position, 0.3f, notPlayerMask);
+    }
     void Jump()
     {
-        
-        if(Physics.Raycast(groundCheckerTransform.position, Vector3.down, 0.2f, notPlayerMask))
+        if(IsGround())
         {
-            _animator.SetTrigger("jump");
+            _animator.SetTrigger("jumpTr");
             _rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
         }
+    }
+    void DoubleJump()
+    {
+        if(!IsGround())
+        {
+            _animator.SetTrigger("jumpTr");
+            _rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
+        }
+    }
+    void Slide()
+    {        
+        if(IsGround())
+        {
+            _animator.SetTrigger("slideTr");           
+            _rigidbody.AddForce(Vector3.forward * slideforce, ForceMode.Impulse);      
+            
+        }
+    }
+    void Attack()
+    {
+        _animator.SetTrigger("AttackTr");
     }
 
 }
