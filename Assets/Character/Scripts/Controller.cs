@@ -13,10 +13,11 @@ public class Controller : MonoBehaviour
     private float slideforce = 5f;
     public Transform groundCheckerTransform;
     public LayerMask notPlayerMask;
+    public TriggerAxeUp triggerAxeUp;
     private float jumpForce = 7f;
     [SerializeField]
     private Camera _playerCamera;
-    public TriggerAxeUp triggerAxeUp;
+    
 
     void Start()
     {
