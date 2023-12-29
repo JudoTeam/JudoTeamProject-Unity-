@@ -16,7 +16,8 @@ public class Controller : MonoBehaviour
     private float jumpForce = 7f;
     [SerializeField]
     private Camera _playerCamera;
-    // Start is called before the first frame update
+    public TriggerAxeUp triggerAxeUp;
+
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody>();
@@ -106,8 +107,13 @@ public class Controller : MonoBehaviour
         }
     }
     void Attack()
-    {
-        _animator.SetTrigger("AttackTr");
+    {   
+        if(triggerAxeUp.Axe != null && (triggerAxeUp.Axe.activeSelf || triggerAxeUp.Axe.activeInHierarchy))
+        {
+            _animator.SetTrigger("AttackTr_Weapons");
+        }
+        else
+            _animator.SetTrigger("AttackTr");
     }
 
 }
