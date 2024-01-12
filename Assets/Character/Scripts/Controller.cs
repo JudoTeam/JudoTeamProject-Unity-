@@ -14,7 +14,10 @@ public class Controller : MonoBehaviour
     public Transform groundCheckerTransform;
     public LayerMask notPlayerMask;
     public TriggerAxeUp triggerAxeUp;
-    private float jumpForce = 7f;
+    public TriggerSwordUp triggerSwordUp;
+    public TriggerRifleUp triggerRifleUp;
+    private bool hasDoubleJumped = false;
+    private float jumpForce = 6f;
     [SerializeField]
     private Camera _playerCamera;
     
@@ -23,7 +26,6 @@ public class Controller : MonoBehaviour
     {
         _rigidbody = GetComponent<Rigidbody>();
         _animator = GetComponent<Animator>();
-
     }
 
     // Update is called once per frame
@@ -40,6 +42,12 @@ public class Controller : MonoBehaviour
         if(directionVector.magnitude > Mathf.Abs(0.05f))
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(directionVector), Time.deltaTime * rotationspeed);
 
+    //     if(triggerSwordUp.Rifle_Player != null && (triggerSwordUp.Rifle_Player.activeSelf || triggerSwordUp.Rifle_Player.activeInHierarchy))
+    //     {   
+    //         _animator.SetBool("Rifle_Bool", true);
+    //         _animator.SetFloat("speedRF", Vector3.ClampMagnitude(directionVector, 1).magnitude); 
+    //     }
+    //    else 
         _animator.SetFloat("speed", Vector3.ClampMagnitude(directionVector, 1).magnitude); 
 
         Vector3 moveDir = Vector3.ClampMagnitude(directionVector, 1) * speed;   
@@ -65,6 +73,7 @@ public class Controller : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
             Attack();
+           //_animator.ResetTrigger("AttackTr");
         }
 
         if(IsGround())
@@ -75,6 +84,24 @@ public class Controller : MonoBehaviour
         {
             _animator.SetBool("isinair", true);
         }
+        
+        if(Input.GetKeyDown(KeyCode.Mouse1) && triggerSwordUp.Sword_Player != null && (triggerSwordUp.Sword_Player.activeSelf || triggerSwordUp.Sword_Player.activeInHierarchy))
+        {
+            Block();
+        }
+        else if(Input.GetKeyUp(KeyCode.Mouse1) && triggerSwordUp.Sword_Player != null && (triggerSwordUp.Sword_Player.activeSelf || triggerSwordUp.Sword_Player.activeInHierarchy))
+        {
+            StopBlock();
+        }
+
+        // if(Input.GetKey(KeyCode.Mouse1) && (triggerRifleUp.Rifle_Player != null && (triggerRifleUp.Rifle_Player.activeSelf || triggerRifleUp.Rifle_Player.activeInHierarchy)))
+        // {
+        //     AIM();
+        // }
+        // else
+        // {
+        //     StopAIM();
+        // }
     }
     bool IsGround()
     {
@@ -86,16 +113,16 @@ public class Controller : MonoBehaviour
         {
             _animator.SetTrigger("jumpTr");
             _rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-
+            hasDoubleJumped = true;
         }
     }
     void DoubleJump()
     {
-        if(!IsGround())
+        if(hasDoubleJumped & !IsGround())
         {
             _animator.SetTrigger("jumpTr");
             _rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-
+            hasDoubleJumped = false;
         }
     }
     void Slide()
@@ -109,12 +136,45 @@ public class Controller : MonoBehaviour
     }
     void Attack()
     {   
-        if(triggerAxeUp.Axe != null && (triggerAxeUp.Axe.activeSelf || triggerAxeUp.Axe.activeInHierarchy))
+        if(triggerSwordUp.Sword_Player != null && (triggerSwordUp.Sword_Player.activeSelf || triggerSwordUp.Sword_Player.activeInHierarchy))
         {
-            _animator.SetTrigger("AttackTr_Weapons");
+            _animator.SetTrigger("AttackTr_Sword");
+            //_animator.ResetTrigger("AttackTr_Sword");
+        }
+        else if(triggerAxeUp.Axe_Player != null && (triggerAxeUp.Axe_Player.activeSelf || triggerAxeUp.Axe_Player.activeInHierarchy))
+        {
+            _animator.SetTrigger("AttackTr_Axe");
+            //_animator.ResetTrigger("AttackTr_Axe");
         }
         else
+        {
             _animator.SetTrigger("AttackTr");
+            //_animator.ResetTrigger("AttackTr");
+        }
+            
     }
-
+    void Block()
+    {        
+        // if(triggerSwordUp.Sword_Player != null && (triggerSwordUp.Sword_Player.activeSelf || triggerSwordUp.Sword_Player.activeInHierarchy))
+        // {
+            //_animator.SetBool("Block", true);     
+            _animator.SetBool("Block", true);  
+            PlayerManager.isBlocking = true;        
+        // }
+    }
+    void StopBlock()
+    {             
+        _animator.SetBool("Block", false);   
+        PlayerManager.isBlocking = false;       
+    }
+    // void AIM()
+    // {        
+    //     //_animator.SetBool("Block", true);     
+    //     _animator.SetBool("AimBool", true);           
+    // }
+    // void StopAIM()
+    // {        
+    //     //_animator.SetBool("Block", true);     
+    //     _animator.SetBool("AimBool", false);           
+    // }
 }
